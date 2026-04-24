@@ -1,6 +1,6 @@
 
 import './App.css'
-import useState from 'react'
+import { useEffect, useState } from 'react'
 import PlaidLink from 'react-plaid-link'
 
 function App() {
