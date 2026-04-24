@@ -1,17 +1,17 @@
 
 import './App.css'
-import { useEffect, useState } from 'react'
-import PlaidLink from 'react-plaid-link'
+//import { useEffect, useState } from 'react'
+//import PlaidLink from 'react-plaid-link'
 
 function App() {
 
-  const [linkToken, setLinkToken] = useState(null);
+//  const [linkToken, setLinkToken] = useState(null);
 
-  useEffect(() => {
-    fetch("/api/create-link-token")
-      .then(res => res.json())
-      .then(data => setLinkToken(data.link_token));
-  }, []);
+//  useEffect(() => {
+//    fetch("/api/create-link-token")
+//      .then(res => res.json())
+//      .then(data => setLinkToken(data.link_token));
+//  }, []);
 
 //  const { open, ready } = PlaidLink.usePlaidLink({
 //    token: linkToken,
