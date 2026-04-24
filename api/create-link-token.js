@@ -17,13 +17,15 @@ export default async function handler(req, res) {
     try {
 
 
+
+
+
         // Account filtering isn't required here, but sometimes 
         // it's helpful to see an example. 
 
-        const request: LinkTokenCreateRequest = {
+        const request = {
             user: {
-                client_user_id: 'user-id',
-                phone_number: '+1 415 5550123'
+                client_user_id: 'drew',
             },
             client_name: 'Personal Finance App',
             products: ['transactions'],
