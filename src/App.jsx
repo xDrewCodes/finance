@@ -1,12 +1,23 @@
 
 import './App.css'
+import useState from 'react'
 
 function App() {
 
-  async function handleConnectBank() {
-    const response = await fetch("/api/create-link-token");
-    console.log(response.body)
+  const [linkToken, setLinkToken] = useState();
+
+  function handleConnectBank() {
+    const response = fetch("/api/create-link-token")
+      .then(res => res.json())
+      .then(data => setLinkToken(data.link_token))
   }
+
+  const { open, ready } = usePlaidLink({
+    token: linkToken,
+    onSuccess: (public_token, metadata) => {
+      console.log("PUBLIC TOKEN:", public_token);
+    }
+  });
 
   return (
     <>
@@ -16,9 +27,9 @@ function App() {
         <div className="month_pl">+$800</div>
       </header>
 
-    <button onClick={handleConnectBank}>
+      <button onClick={handleConnectBank}>
         Connect Bank
-    </button>
+      </button>
 
       <div className="navbar">
         <div className="home">Home</div>
