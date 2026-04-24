@@ -5,6 +5,7 @@ import PlaidLink from 'react-plaid-link'
 
 function App() {
 
+  const [signedIn, setSignedIn] = useState(false);
   const [linkToken, setLinkToken] = useState(null);
 
   useEffect(() => {
@@ -28,9 +29,12 @@ function App() {
         <div className="month_pl">+$800</div>
       </header>
 
-      <button onClick={() => open()} disabled={!ready || !linkToken}>
-        Connect Bank
-      </button>
+      {
+        signedIn ? "" :
+        <button onClick={() => open()} disabled={!ready || !linkToken}>
+          Connect Bank
+        </button>
+      }
 
       <div className="navbar">
         <div className="home">Home</div>

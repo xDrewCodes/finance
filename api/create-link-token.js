@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       user: {
         client_user_id: "drew",
       },
-      client_name: "Personal Finance App",
+      client_name: "Drew Money",
       products: ["transactions"],
       country_codes: ["US"],
       language: "en",

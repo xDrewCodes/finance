@@ -33,3 +33,20 @@ header {
 .navbar div:hover {
   background-color: #090a0fe0;
 }
+
+button {
+  border: none;
+  background: rgb(73, 68, 68);
+  padding: 16px;
+  width: fit-content;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+}
+
+button:hover {
+  background: rgb(73, 68, 68);
+  opacity: 0.8;
+}
