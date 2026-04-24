@@ -1,7 +1,7 @@
 
 import './App.css'
 import useState from 'react'
-import usePlaidLink from 'react-plaid-link'
+import PlaidLink from 'react-plaid-link'
 
 function App() {
 
@@ -13,7 +13,7 @@ function App() {
       .then(data => setLinkToken(data.link_token));
   }, []);
 
-  const { open, ready } = usePlaidLink({
+  const { open, ready } = PlaidLink.usePlaidLink({
     token: linkToken,
     onSuccess: (public_token) => {
       console.log("PUBLIC TOKEN:", public_token);
