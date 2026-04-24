@@ -28,7 +28,7 @@ function App() {
         <div className="month_pl">+$800</div>
       </header>
 
-      <button onClick={() => open()} disabled={!ready || !linkToken}>
+      <button>
         Connect Bank
       </button>
 
