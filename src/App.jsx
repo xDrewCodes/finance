@@ -13,12 +13,12 @@ function App() {
       .then(data => setLinkToken(data.link_token));
   }, []);
 
-  const { open, ready } = PlaidLink.usePlaidLink({
-    token: linkToken,
-    onSuccess: (public_token) => {
-      console.log("PUBLIC TOKEN:", public_token);
-    }
-  });
+//  const { open, ready } = PlaidLink.usePlaidLink({
+//    token: linkToken,
+//    onSuccess: (public_token) => {
+//      console.log("PUBLIC TOKEN:", public_token);
+//    }
+//  });
 
   return (
     <>
