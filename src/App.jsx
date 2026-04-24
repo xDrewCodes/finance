@@ -4,17 +4,17 @@ import useState from 'react'
 
 function App() {
 
-  const [linkToken, setLinkToken] = useState();
+  const [linkToken, setLinkToken] = useState(null);
 
-  function handleConnectBank() {
-    const response = fetch("/api/create-link-token")
+  useEffect(() => {
+    fetch("/api/create-link-token")
       .then(res => res.json())
-      .then(data => setLinkToken(data.link_token))
-  }
+      .then(data => setLinkToken(data.link_token));
+  }, []);
 
   const { open, ready } = usePlaidLink({
     token: linkToken,
-    onSuccess: (public_token, metadata) => {
+    onSuccess: (public_token) => {
       console.log("PUBLIC TOKEN:", public_token);
     }
   });
@@ -27,7 +27,7 @@ function App() {
         <div className="month_pl">+$800</div>
       </header>
 
-      <button onClick={handleConnectBank}>
+      <button onClick={() => open()} disabled={!ready || !linkToken}>
         Connect Bank
       </button>
 
