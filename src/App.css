@@ -1,33 +1,86 @@
 
 header {
-  padding: 2rem 1rem;
-  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
 }
 
-.checkings {
+.summary {
+  background: var(--accent);
+  margin: 1rem;
+  height: 13rem;
+  border-radius: 8px;
+  padding: 2rem;
+  color: white;
+  font-family: Roboto;
+  line-height: 1;
+  font-size: 2rem;
+  letter-spacing: 0.2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  margin-bottom: 1rem;
+  line-height: 2.1rem;
+}
+
+.summary_filter {
+  background: white;
+  border-radius: 100px;
+  color: var(--accent);
   font-size: 1.2rem;
+  letter-spacing: 0;
+  padding: 0.2rem 1rem;
+  width: fit-content;
+}
+
+.summary_title {
+  font-weight: 200;
+  font-family: Roboto;
+  font-size: 1rem;
+  color: white;
+  letter-spacing: 0rem;
+}
+
+.bal_breakdown {
+  display: flex;
+  justify-content: left;
+  color: var(--accent);
   font-family: Roboto;
 }
 
-.savings {
-  font-size: 1.2rem;
+.bal_breakdown div {
+  margin-left: 1rem;
+  background: var(--light);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: left;
+  font-size: 1.1rem;
+  letter-spacing: 0.05rem;
 }
 
 .month_pl {
+  margin-top: 2rem;
   color: rgb(12, 192, 12);
 }
 
 .navbar {
   position: fixed;
-  bottom: 0;
-  width: 100%;
-  background-color: #11131db0;
+  bottom: 1rem;
+  width: 80%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--light);
   display: flex;
   justify-content: space-around;
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-size: 1.2rem;
 }
 
 .navbar div {
-  padding: 8px;
+  padding: 0.5rem;
+  border-radius: 8px;
 }
 
 .navbar div:hover {
@@ -35,15 +88,17 @@ header {
 }
 
 button {
+  width: 10rem;
+  height: 4rem;
   border: none;
-  background: rgb(73, 68, 68);
-  padding: 16px;
-  width: fit-content;
+  background: var(--accent);
+  padding: 12px 16px;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   color: white;
+  border-radius: 6px;
 }
 
 button:hover {

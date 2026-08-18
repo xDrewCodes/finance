@@ -24,16 +24,45 @@ function App() {
   return (
     <>
       <header>
-        <div className="checkings">$730</div>
-        <div className="savings">$6,432</div>
-        <div className="month_pl">+$800</div>
+        <div className="pfp">Drew</div>
+        <div className="settings">Settings</div>
       </header>
 
+      <section className="summary">
+        <div className="summary_filter">All Acounts</div>
+        <div className="total_bal"><span className="summary_title">Total Balance</span><br></br> $5,401.94</div>
+      </section>
+
+      <div className="bal_breakdown">
+        <div className="account_breakdown">Account Overview</div>
+        <div className="account_settings">Account Settings</div>
+      </div>
+      <div className="month_pl">+$800 This Month</div>
+
       {
-        signedIn ? "" :
-        <button onClick={() => open()} disabled={!ready || !linkToken}>
-          Connect Bank
-        </button>
+        signedIn ?
+          <>
+            <header>
+              <div className="pfp">Drew</div>
+              <div className="settings">Settings</div>
+            </header>
+
+            <section className="summary">
+              <div className="summary_filter">All Acounts</div>
+              <div className="total_bal"><span className="summary_title">Total Balance</span><br></br> $5,401.94</div>
+            </section>
+
+            <div className="bal_breakdown">
+              <div className="account_breakdown">Account Overview</div>
+              <div className="account_settings">Account Settings</div>
+            </div>
+            <div className="month_pl">+$800 This Month</div>
+          </>
+
+          :
+          <button onClick={() => open()} disabled={!ready || !linkToken}>
+            Connect Bank
+          </button>
       }
 
       <div className="navbar">
