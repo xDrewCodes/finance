@@ -24,7 +24,7 @@ function App() {
   return (
     <>
       <header>
-        <div className="pfp">Drew</div>
+        <div className="pfp"><div></div>Drew</div>
         <div className="settings">Settings</div>
       </header>
 
@@ -33,32 +33,31 @@ function App() {
         <div className="total_bal"><span className="summary_title">Total Balance</span><br></br> $5,401.94</div>
       </section>
 
-      <div className="bal_breakdown">
-        <div className="account_breakdown">Account Overview</div>
-        <div className="account_settings">Account Settings</div>
-      </div>
-      <div className="month_pl">+$800 This Month</div>
+      <section className="bal_breakdown">
+        <div className="account_breakdown">Account Breakdown</div>
+        <div className="manage_money">Manage Money</div>
+      </section>
+
+
+      <h2 className="month_pl_legend">Month Recap</h2>
+      <section className="month_pl">
+        <div className="pl_title">
+          <span className="pl_bal">+1,429.55</span>
+        </div>
+        <div className="pl_chart">
+          <div className="pl_chart_block"></div>
+          <div className="pl_chart_block"></div>
+          <div className="pl_chart_block"></div>
+          <div className="pl_chart_block" style={{ background: "#193441" }}></div>
+          <div className="pl_chart_block"></div>
+          <div className="pl_chart_block"></div>
+          <div className="pl_chart_block"></div>
+        </div>
+      </section>
 
       {
         signedIn ?
-          <>
-            <header>
-              <div className="pfp">Drew</div>
-              <div className="settings">Settings</div>
-            </header>
-
-            <section className="summary">
-              <div className="summary_filter">All Acounts</div>
-              <div className="total_bal"><span className="summary_title">Total Balance</span><br></br> $5,401.94</div>
-            </section>
-
-            <div className="bal_breakdown">
-              <div className="account_breakdown">Account Overview</div>
-              <div className="account_settings">Account Settings</div>
-            </div>
-            <div className="month_pl">+$800 This Month</div>
-          </>
-
+          ""
           :
           <button onClick={() => open()} disabled={!ready || !linkToken}>
             Connect Bank
