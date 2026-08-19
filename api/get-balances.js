@@ -20,40 +20,34 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { public_token } = req.body;
+        const { access_token } = req.body;
 
-        if (!public_token) {
+        if (!access_token) {
             return res.status(400).json({
-                error: "Missing public_token",
+                error: "Missing access_token",
             });
         }
 
-        const response = await plaidClient.itemPublicTokenExchange({
-            public_token,
+        const response = await plaidClient.accountsGet({
+            access_token,
         });
 
-        const { access_token, item_id } = response.data;
-
-        // IMPORTANT:
-        // Store these in your database here.
-        //
-        // access_token → encrypted/server-side storage
-        // item_id      → identifies the Plaid Item
+        const accounts = response.data.accounts;
 
         return res.status(200).json({
             success: true,
-            item_id,
-            access_token,
+            accounts,
         });
 
     } catch (error) {
         console.error(
-            "Plaid token exchange error:",
+            "Plaid accounts error:",
             error.response?.data || error.message
         );
 
         return res.status(500).json({
-            error: "Failed to exchange public token",
+            error: "Failed to retrieve accounts",
+            details: error.response?.data || error.message,
         });
     }
 }
