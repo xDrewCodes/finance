@@ -33,19 +33,24 @@ function App() {
       setSignedIn(true);
       setAccessToken(data.access_token);
 
-      const response = await fetch("/api/get-balances", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          access_token: accessToken,
-        }),
-      });
+      async function getBalances() {
+        const response = await fetch("/api/get-balances", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            access_token: accessToken,
+          }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      console.log("PLAID ACCOUNTS:", data.accounts);
+        console.log("PLAID ACCOUNTS:", data.accounts);
+      }
+
+      getBalances()
+
     }
 
   }
