@@ -16,8 +16,21 @@ function App() {
 
   const { open, ready } = PlaidLink.usePlaidLink({
     token: linkToken,
-    onSuccess: (public_token) => {
-      console.log("PUBLIC TOKEN:", public_token);
+    onSuccess: async (public_token, metadata) => {
+      const response = await fetch("/api/exchange-token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          public_token,
+        }),
+      });
+
+      const data = await response.json();
+
+      console.log("Exchange result:", data);
+
       setSignedIn(true);
     }
   });
