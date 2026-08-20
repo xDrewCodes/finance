@@ -3,7 +3,7 @@ import './App.css';
 import { useEffect, useState } from 'react';
 import PlaidLink from 'react-plaid-link';
 
-import Home from './components/home';
+import Home from './components/home'
 import Nav from './components/Nav';
 import Sort from './components/Sort';
 
@@ -69,7 +69,7 @@ function App() {
 
           <Routes>
 
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home signedIn={signedIn} />} />
             <Route path="/sort" element={<Sort />} />
 
 

@@ -1,7 +1,7 @@
 
 import react from 'react';
 
-function Home() {
+function Home( signedIn ) {
     return (
 
         <>
@@ -57,14 +57,3 @@ function Home() {
 }
 
 export default Home
-
-
-
-{
-    signedIn ?
-        <></>
-        :
-        <button onClick={() => open()} disabled={!ready || !linkToken}>
-            Connect Bank
-        </button>
-}
