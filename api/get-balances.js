@@ -40,14 +40,13 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error(
-            "Plaid accounts error:",
-            error.response?.data || error.message
-        );
+        console.error("Plaid accounts error:");
+        console.error("Status:", error.response?.status);
+        console.error("Data:", error.response?.data);
+        console.error("Message:", error.message);
 
-        return res.status(500).json({
-            error: "Failed to retrieve accounts",
-            details: error.response?.data || error.message,
+        return res.status(error.response?.status || 500).json({
+            error: error.response?.data || error.message,
         });
     }
 }
