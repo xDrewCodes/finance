@@ -21,23 +21,15 @@ function Home({
                 const firebaseToken = await user.getIdToken();
 
                 const response = await fetch("/api/bank-status", {
+                    method: "GET",
                     headers: {
-                        Authorization: `Bearer ${await user.getIdToken()}`
+                        Authorization: `Bearer ${firebaseToken}`
                     }
                 });
 
-                const text = await response.text();
+                const data = await response.json();
 
-                console.log("BANK STATUS HTTP:", response.status);
-                console.log("BANK STATUS RESPONSE:", text);
-
-                if (!response.ok) {
-                    throw new Error(`Bank status failed: ${response.status}`);
-                }
-
-                const data = JSON.parse(text);
-
-                setBankStatus(data);
+                console.log("BANK STATUS:", data);
 
             } catch (error) {
 

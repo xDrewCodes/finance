@@ -1,71 +1,50 @@
-import { adminAuth, db } from "./firebase-admin.js";
+import { auth, db } from "./firebase-admin.js";
 
 export default async function handler(req, res) {
 
     try {
 
-        console.log("BANK STATUS REQUEST");
-
         const authHeader = req.headers.authorization;
 
-        console.log(
-            "Has auth header:",
-            !!authHeader
-        );
-
-        if (!authHeader?.startsWith("Bearer ")) {
-
+        if (!authHeader) {
             return res.status(401).json({
-                error: "Missing Firebase authentication"
+                error: "No authorization header"
             });
-
         }
 
-        const firebaseToken =
-            authHeader.substring(7);
+        const idToken = authHeader.split("Bearer ")[1];
 
-        console.log("Verifying Firebase token...");
+        if (!idToken) {
+            return res.status(401).json({
+                error: "No Firebase ID token"
+            });
+        }
 
-        const decodedToken =
-            await adminAuth.verifyIdToken(firebaseToken);
+        // Verify Firebase user
+        const decodedToken = await auth.verifyIdToken(idToken);
 
         const uid = decodedToken.uid;
 
         console.log("Firebase UID:", uid);
 
+        // Find Plaid items belonging to this user
         const snapshot = await db
             .collection("plaidItems")
             .where("userId", "==", uid)
             .get();
 
-        const banks = snapshot.docs.map(doc => ({
-            itemId: doc.id,
-            institutionName:
-                doc.data().institutionName ||
-                "Connected Bank"
-        }));
-
-        console.log(
-            "Found banks:",
-            banks.length
-        );
+        console.log("Plaid items found:", snapshot.size);
 
         return res.status(200).json({
-            hasBanks: banks.length > 0,
-            banks
+            hasBanks: snapshot.size > 0
         });
 
     } catch (error) {
 
-        console.error(
-            "BANK STATUS ERROR:",
-            error
-        );
+        console.error("BANK STATUS ERROR:", error);
 
         return res.status(500).json({
-            error: "Failed to check bank status",
-            message: error.message
+            error: error.message
         });
-
     }
 }
