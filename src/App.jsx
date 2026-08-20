@@ -1,97 +1,235 @@
-
 import './App.css';
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import PlaidLink from 'react-plaid-link';
 
-import Home from './components/home'
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from './firebase/firebaseConfig';
+
+import Home from './components/home';
 import Nav from './components/Nav';
 import Sort from './components/Sort';
+import Login from './components/Login';
 
 function App() {
 
-  const [signedIn, setSignedIn] = useState(false);
+  // Firebase authentication
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Plaid
   const [linkToken, setLinkToken] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
 
+  /*
+   * Watch Firebase authentication state
+   */
   useEffect(() => {
-    fetch("/api/create-link-token")
-      .then(res => res.json())
-      .then(data => setLinkToken(data.link_token));
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+
+    return unsubscribe;
+
   }, []);
 
+  /*
+   * Get a Plaid Link token.
+   *
+   * We only need to do this when the user is signed in.
+   */
+  useEffect(() => {
+
+    if (!user) {
+      setLinkToken(null);
+      return;
+    }
+
+    fetch('/api/create-link-token')
+      .then(res => res.json())
+      .then(data => {
+        console.log('PLAID LINK TOKEN:', data.link_token);
+        setLinkToken(data.link_token);
+      })
+      .catch(error => {
+        console.error('Failed to create Link token:', error);
+      });
+
+  }, [user]);
+
+  /*
+   * Plaid Link
+   */
   const { open, ready } = PlaidLink.usePlaidLink({
+
     token: linkToken,
+
     onSuccess: async (public_token, metadata) => {
-      const response = await fetch("/api/exchange-token", {
-        method: "POST",
+
+      try {
+
+        console.log('PUBLIC TOKEN:', public_token);
+        console.log('PLAID METADATA:', metadata);
+
+        const response = await fetch('/api/exchange-token', {
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json',
+          },
+
+          body: JSON.stringify({
+            public_token,
+          }),
+        });
+
+        const data = await response.json();
+
+        console.log('EXCHANGE RESPONSE:', data);
+
+        if (!response.ok) {
+          console.error('Token exchange failed:', data);
+          return;
+        }
+
+        /*
+         * TEMPORARY:
+         *
+         * We're still keeping the access token in React while
+         * we're testing Plaid.
+         *
+         * Once Firestore is connected, this will be removed.
+         */
+        setAccessToken(data.access_token);
+
+      } catch (error) {
+
+        console.error('Plaid exchange error:', error);
+
+      }
+
+    }
+
+  });
+
+  /*
+   * Get account balances.
+   *
+   * TEMPORARY:
+   * This sends the access token from React to the backend.
+   *
+   * Once Firestore is set up, the backend will retrieve the
+   * access token itself.
+   */
+  async function getBalances() {
+
+    if (!accessToken) {
+      console.log('No access token available.');
+      return;
+    }
+
+    try {
+
+      const response = await fetch('/api/get-balances', {
+        method: 'POST',
+
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
+
         body: JSON.stringify({
-          public_token,
+          access_token: accessToken,
         }),
       });
 
       const data = await response.json();
 
-      setSignedIn(true);
-      setAccessToken(data.access_token);
+      console.log('BALANCE RESPONSE:', data);
+
+    } catch (error) {
+
+      console.error('Balance request failed:', error);
 
     }
 
+  }
 
-  });
+  /*
+   * Sign out of Firebase
+   */
+  async function handleSignOut() {
 
-  async function getBalances() {
+    try {
 
-    const response = await fetch("/api/get-balances", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        access_token: accessToken
-      }),
-    });
+      await signOut(auth);
 
-    const data = await response.json();
+      setAccessToken(null);
+      setLinkToken(null);
 
-    console.log("BALANCE RESPONSE:", data);
+    } catch (error) {
+
+      console.error('Sign out failed:', error);
+
+    }
 
   }
 
+  /*
+   * Don't render the application until Firebase has determined
+   * whether the user is signed in.
+   */
+  if (authLoading) {
+    return (
+      <div>
+        Loading...
+      </div>
+    );
+  }
+
   return (
-    <>
 
-      <BrowserRouter>
+    <BrowserRouter>
 
-        <Routes>
+      <Routes>
 
-          <Route
-            path="/"
-            element={
+        <Route
+          path="/"
+          element={
+            user ? (
               <Home
-                signedIn={signedIn}
-                getBalances={getBalances}
+                user={user}
                 open={open}
                 ready={ready}
                 linkToken={linkToken}
+                getBalances={getBalances}
+                handleSignOut={handleSignOut}
               />
-            }
-          />
-          
-          <Route path="/sort" element={<Sort />} />
+            ) : (
+              <Login />
+            )
+          }
+        />
 
+        <Route
+          path="/sort"
+          element={
+            user ? (
+              <Sort />
+            ) : (
+              <Login />
+            )
+          }
+        />
 
-        </Routes>
+      </Routes>
 
-        <Nav />
+      {user && <Nav />}
 
-      </BrowserRouter>
+    </BrowserRouter>
 
-    </>
-  )
+  );
 }
 
-export default App
+export default App;
