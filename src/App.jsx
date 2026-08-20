@@ -33,32 +33,28 @@ function App() {
       setSignedIn(true);
       setAccessToken(data.access_token);
 
-      console.log(accessToken);
-
-      async function getBalances() {
-
-        const response = await fetch("/api/get-balances", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            access_token: data.access_token
-          }),
-        });
-
-        const data = await response.json();
-
-        console.log("BALANCE RESPONSE:", data);
-
-      }
-
-      getBalances()
-
     }
 
 
   });
+
+  async function getBalances() {
+
+    const response = await fetch("/api/get-balances", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        access_token: accessToken
+      }),
+    });
+
+    const data = await response.json();
+
+    console.log("BALANCE RESPONSE:", data);
+
+  }
 
   return (
     <>
@@ -98,6 +94,9 @@ function App() {
                 <div className="pl_chart_block"></div>
               </div>
             </section>
+
+            <div className="balances" onClick={getBalances}>Get Balances</div>
+
           </>
           :
           <button onClick={() => open()} disabled={!ready || !linkToken}>
