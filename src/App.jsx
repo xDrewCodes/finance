@@ -92,16 +92,6 @@ function App() {
           return;
         }
 
-        /*
-         * TEMPORARY:
-         *
-         * We're still keeping the access token in React while
-         * we're testing Plaid.
-         *
-         * Once Firestore is connected, this will be removed.
-         */
-        setAccessToken(data.access_token);
-
       } catch (error) {
 
         console.error('Plaid exchange error:', error);
