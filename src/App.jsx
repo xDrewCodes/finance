@@ -1,7 +1,11 @@
 
-import './App.css'
-import { useEffect, useState } from 'react'
-import PlaidLink from 'react-plaid-link'
+import './App.css';
+import { useEffect, useState } from 'react';
+import PlaidLink from 'react-plaid-link';
+
+import Home from './components/home';
+import Nav from './components/Nav';
+import Sort from './components/Sort';
 
 function App() {
 
@@ -59,57 +63,23 @@ function App() {
   return (
     <>
 
+      <AuthProvider>
 
-      {
-        signedIn ?
-          <>
-            <header>
-              <div className="pfp"><div></div>Drew</div>
-              <div className="settings">Settings</div>
-            </header>
+        <BrowserRouter>
 
-            <section className="summary">
-              <div className="summary_filter">All Acounts</div>
-              <div className="total_bal"><span className="summary_title">Total Balance</span><br></br> $5,401.94</div>
-            </section>
+          <Routes>
 
-            <section className="bal_breakdown">
-              <div className="account_breakdown">Account Breakdown</div>
-              <div className="manage_money">Manage Money</div>
-            </section>
+            <Route path="/" element={<Home />} />
+            <Route path="/sort" element={<Sort />} />
 
 
-            <h2 className="month_pl_legend">Month Recap</h2>
-            <section className="month_pl">
-              <div className="pl_title">
-                <span className="pl_bal">+1,429.55</span>
-              </div>
-              <div className="pl_chart">
-                <div className="pl_chart_block"></div>
-                <div className="pl_chart_block"></div>
-                <div className="pl_chart_block"></div>
-                <div className="pl_chart_block" style={{ background: "#193441" }}></div>
-                <div className="pl_chart_block"></div>
-                <div className="pl_chart_block"></div>
-                <div className="pl_chart_block"></div>
-              </div>
-            </section>
+          </Routes>
 
-            <div className="balances" onClick={getBalances}>Get Balances</div>
+          <Nav />
 
-          </>
-          :
-          <button onClick={() => open()} disabled={!ready || !linkToken}>
-            Connect Bank
-          </button>
-      }
+        </BrowserRouter>
+      </AuthProvider>
 
-      <div className="navbar">
-        <div className="home">Home</div>
-        <div className="tracking">Track</div>
-        <div className="transactions">Sort</div>
-        <div className="settings">Settings</div>
-      </div>
     </>
   )
 }
