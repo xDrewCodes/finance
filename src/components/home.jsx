@@ -1,7 +1,7 @@
 
 import react from 'react';
 
-function Home( signedIn ) {
+function Home( signedIn, getBalances ) {
     return (
 
         <>
