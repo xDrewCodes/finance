@@ -33,7 +33,7 @@ function App() {
       setSignedIn(true);
       setAccessToken(data.access_token);
 
-      console.log("PLAID ACCESS TOKEN:", data.access_token);
+      console.log(accessToken);
 
       async function getBalances() {
 
@@ -43,7 +43,7 @@ function App() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            access_token: accessToken
+            access_token: data.access_token
           }),
         });
 
