@@ -1,7 +1,13 @@
 
 import react from 'react';
 
-function Home( { signedIn, getBalances } ) {
+function Home({
+    signedIn,
+    getBalances,
+    open,
+    ready,
+    linkToken
+}) {
     return (
 
         <>
@@ -46,7 +52,10 @@ function Home( { signedIn, getBalances } ) {
 
                     </>
                     :
-                    <button onClick={() => open()} disabled={!ready || !linkToken}>
+                    <button
+                        onClick={open}
+                        disabled={!ready || !linkToken}
+                    >
                         Connect Bank
                     </button>
             }

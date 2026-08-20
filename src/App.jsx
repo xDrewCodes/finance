@@ -68,7 +68,19 @@ function App() {
 
         <Routes>
 
-          <Route path="/" element={<Home signedIn={signedIn} getBalances={getBalances} />} />
+          <Route
+            path="/"
+            element={
+              <Home
+                signedIn={signedIn}
+                getBalances={getBalances}
+                open={open}
+                ready={ready}
+                linkToken={linkToken}
+              />
+            }
+          />
+          
           <Route path="/sort" element={<Sort />} />
 
 
