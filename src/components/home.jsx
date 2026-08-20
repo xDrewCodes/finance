@@ -1,5 +1,5 @@
 
-import './App.css'
+import react from 'react';
 
 function Home() {
     return (
