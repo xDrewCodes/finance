@@ -70,19 +70,17 @@ function App() {
 
       try {
 
-        console.log('PUBLIC TOKEN:', public_token);
-        console.log('PLAID METADATA:', metadata);
+        const firebaseToken = await user.getIdToken();
 
-        const response = await fetch('/api/exchange-token', {
-          method: 'POST',
-
+        const response = await fetch("/api/exchange-token", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${firebaseToken}`
           },
-
           body: JSON.stringify({
-            public_token,
-          }),
+            public_token
+          })
         });
 
         const data = await response.json();
