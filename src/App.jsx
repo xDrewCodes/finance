@@ -63,22 +63,19 @@ function App() {
   return (
     <>
 
-      <AuthProvider>
+      <BrowserRouter>
 
-        <BrowserRouter>
+        <Routes>
 
-          <Routes>
-
-            <Route path="/" element={<Home signedIn={signedIn} />} />
-            <Route path="/sort" element={<Sort />} />
+          <Route path="/" element={<Home signedIn={signedIn} />} />
+          <Route path="/sort" element={<Sort />} />
 
 
-          </Routes>
+        </Routes>
 
-          <Nav />
+        <Nav />
 
-        </BrowserRouter>
-      </AuthProvider>
+      </BrowserRouter>
 
     </>
   )
