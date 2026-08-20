@@ -33,6 +33,8 @@ function App() {
       setSignedIn(true);
       setAccessToken(data.access_token);
 
+      console.log("PLAID ACCESS TOKEN:", data.access_token);
+
       async function getBalances() {
         const response = await fetch("/api/get-balances", {
           method: "POST",
