@@ -17,7 +17,7 @@ function Accounts({ user, open, ready, linkToken }) {
 
             const token = await user.getIdToken();
 
-            const response = await fetch("/api/get-accounts", {
+            const response = await fetch("/api/update-accounts", {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`
