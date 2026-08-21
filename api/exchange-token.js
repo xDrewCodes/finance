@@ -82,8 +82,12 @@ export default async function handler(req, res) {
         // --------------------------------
 
         const itemRef = db
-            .collection("plaidItems")
-            .doc(item_id);
+            .collection('users')
+            .doc(uid)
+            .collection('plaidItems')
+            .doc(institutionId)
+            .collection('accounts')
+            .doc(item_id)
 
         const existingItem =
             await itemRef.get();
