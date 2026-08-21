@@ -33,6 +33,7 @@ function Accounts({ user, open, ready, linkToken }) {
             }
 
             setAccounts(data.accounts || []);
+            console.log(data.accounts)
 
         } catch (error) {
 
@@ -151,7 +152,6 @@ function Accounts({ user, open, ready, linkToken }) {
         );
 
     }
-
 
     return (
 
