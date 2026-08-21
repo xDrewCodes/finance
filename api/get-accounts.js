@@ -36,32 +36,7 @@ export default async function handler(req, res) {
             const data = doc.data();
 
             return {
-                accountId: doc.id,
-
-                plaidItemId: data.plaidItemId || null,
-
-                institutionName:
-                    data.institutionName || "Unknown Institution",
-
-                name: data.name || "Account",
-
-                officialName:
-                    data.officialName || null,
-
-                type: data.type || null,
-
-                subtype: data.subtype || null,
-
-                mask: data.mask || null,
-
-                currentBalance:
-                    data.currentBalance ?? null,
-
-                availableBalance:
-                    data.availableBalance ?? null,
-
-                balanceUpdatedAt:
-                    data.balanceUpdatedAt?.toDate?.()?.toISOString() || null
+                accounts
             };
         });
 
