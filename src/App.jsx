@@ -3,221 +3,212 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import PlaidLink from 'react-plaid-link';
 
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from './firebase/firebaseConfig';
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase/firebaseConfig";
 
 import Home from './components/home';
 import Nav from './components/Nav';
 import Sort from './components/Sort';
-import Login from './components/Login';
+
 
 function App() {
 
-  // Firebase authentication
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [authLoading, setAuthLoading] = useState(true);
 
-  // Plaid
-  const [linkToken, setLinkToken] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
+    const [hasBanks, setHasBanks] = useState(false);
+    const [bankLoading, setBankLoading] = useState(false);
 
-  /*
-   * Watch Firebase authentication state
-   */
-  useEffect(() => {
+    const [linkToken, setLinkToken] = useState(null);
 
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setAuthLoading(false);
-    });
 
-    return unsubscribe;
+    // Firebase authentication
 
-  }, []);
+    useEffect(() => {
 
-  /*
-   * Get a Plaid Link token.
-   *
-   * We only need to do this when the user is signed in.
-   */
-  useEffect(() => {
+        const unsubscribe = onAuthStateChanged(
+            auth,
+            (currentUser) => {
 
-    if (!user) {
-      setLinkToken(null);
-      return;
-    }
+                setUser(currentUser);
+                setAuthLoading(false);
 
-    fetch('/api/create-link-token')
-      .then(res => res.json())
-      .then(data => {
-        console.log('PLAID LINK TOKEN:', data.link_token);
-        setLinkToken(data.link_token);
-      })
-      .catch(error => {
-        console.error('Failed to create Link token:', error);
-      });
+            }
+        );
 
-  }, [user]);
+        return unsubscribe;
 
-  /*
-   * Plaid Link
-   */
-  const { open, ready } = PlaidLink.usePlaidLink({
+    }, []);
 
-    token: linkToken,
 
-    onSuccess: async (public_token, metadata) => {
+    // Get Plaid Link token
 
-      try {
+    useEffect(() => {
 
-        const firebaseToken = await user.getIdToken();
-
-        const response = await fetch("/api/exchange-token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${firebaseToken}`
-          },
-          body: JSON.stringify({
-            public_token
-          })
-        });
-
-        const data = await response.json();
-
-        console.log('EXCHANGE RESPONSE:', data);
-
-        if (!response.ok) {
-          console.error('Token exchange failed:', data);
-          return;
+        if (!user) {
+            setLinkToken(null);
+            return;
         }
 
-      } catch (error) {
+        fetch("/api/create-link-token")
+            .then(res => res.json())
+            .then(data => {
+                setLinkToken(data.link_token);
+            });
 
-        console.error('Plaid exchange error:', error);
+    }, [user]);
 
-      }
 
-    }
+    // Check whether user has banks
 
-  });
+    async function checkBankStatus() {
 
-  /*
-   * Get account balances.
-   *
-   * TEMPORARY:
-   * This sends the access token from React to the backend.
-   *
-   * Once Firestore is set up, the backend will retrieve the
-   * access token itself.
-   */
-  async function getBalances() {
+        if (!user) return;
 
-    if (!accessToken) {
-      console.log('No access token available.');
-      return;
-    }
+        try {
 
-    try {
+            setBankLoading(true);
 
-      const response = await fetch('/api/get-balances', {
-        method: 'POST',
+            const firebaseToken =
+                await user.getIdToken();
 
-        headers: {
-          'Content-Type': 'application/json',
-        },
+            const response = await fetch(
+                "/api/bank-status",
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${firebaseToken}`
+                    }
+                }
+            );
 
-        body: JSON.stringify({
-          access_token: accessToken,
-        }),
-      });
+            const data =
+                await response.json();
 
-      const data = await response.json();
+            console.log("BANK STATUS:", data);
 
-      console.log('BALANCE RESPONSE:', data);
+            setHasBanks(data.hasBanks);
 
-    } catch (error) {
+        } catch (error) {
 
-      console.error('Balance request failed:', error);
+            console.error(
+                "Failed to check banks:",
+                error
+            );
 
-    }
+        } finally {
 
-  }
+            setBankLoading(false);
 
-  /*
-   * Sign out of Firebase
-   */
-  async function handleSignOut() {
-
-    try {
-
-      await signOut(auth);
-
-      setAccessToken(null);
-      setLinkToken(null);
-
-    } catch (error) {
-
-      console.error('Sign out failed:', error);
+        }
 
     }
 
-  }
 
-  /*
-   * Don't render the application until Firebase has determined
-   * whether the user is signed in.
-   */
-  if (authLoading) {
+    // Check banks whenever user signs in
+
+    useEffect(() => {
+
+        if (user) {
+            checkBankStatus();
+        } else {
+            setHasBanks(false);
+        }
+
+    }, [user]);
+
+
+    // Plaid Link
+
+    const { open, ready } =
+        PlaidLink.usePlaidLink({
+
+            token: linkToken,
+
+            onSuccess: async (
+                public_token,
+                metadata
+            ) => {
+
+                const firebaseToken =
+                    await user.getIdToken();
+
+                const response =
+                    await fetch(
+                        "/api/exchange-token",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                Authorization:
+                                    `Bearer ${firebaseToken}`
+                            },
+
+                            body: JSON.stringify({
+                                public_token
+                            })
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                console.log(
+                    "PLAID EXCHANGE:",
+                    data
+                );
+
+                // Re-check bank status
+                // after connecting bank
+
+                await checkBankStatus();
+
+            }
+
+        });
+
+
+    if (authLoading) {
+        return <div>Loading...</div>;
+    }
+
+
     return (
-      <div>
-        Loading...
-      </div>
+
+        <BrowserRouter>
+
+            <Routes>
+
+                <Route
+                    path="/"
+                    element={
+                        <Home
+                            user={user}
+                            hasBanks={hasBanks}
+                            bankLoading={bankLoading}
+                            open={open}
+                            ready={ready}
+                            linkToken={linkToken}
+                        />
+                    }
+                />
+
+                <Route
+                    path="/sort"
+                    element={<Sort />}
+                />
+
+            </Routes>
+
+            {user && <Nav />}
+
+        </BrowserRouter>
+
     );
-  }
 
-  return (
-
-    <BrowserRouter>
-
-      <Routes>
-
-        <Route
-          path="/"
-          element={
-            user ? (
-              <Home
-                user={user}
-                open={open}
-                ready={ready}
-                linkToken={linkToken}
-                getBalances={getBalances}
-                handleSignOut={handleSignOut}
-              />
-            ) : (
-              <Login />
-            )
-          }
-        />
-
-        <Route
-          path="/sort"
-          element={
-            user ? (
-              <Sort />
-            ) : (
-              <Login />
-            )
-          }
-        />
-
-      </Routes>
-
-      {user && <Nav />}
-
-    </BrowserRouter>
-
-  );
 }
 
 export default App;

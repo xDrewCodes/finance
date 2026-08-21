@@ -1,98 +1,77 @@
-import React, { useEffect, useState } from "react";
-
 function Home({
     user,
+    hasBanks,
+    bankLoading,
     open,
     ready,
-    linkToken,
-    getBalances,
-    handleSignOut
+    linkToken
 }) {
 
-    const [bankStatus, setBankStatus] = useState(null);
-    const [loading, setLoading] = useState(true);
+    // User is authenticated but
+    // we're still checking Firestore
 
-    useEffect(() => {
-
-        async function checkBanks() {
-
-            try {
-
-                const firebaseToken = await user.getIdToken();
-
-                const response = await fetch("/api/bank-status", {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${firebaseToken}`
-                    }
-                });
-
-                const data = await response.json();
-
-                console.log("BANK STATUS:", data);
-
-            } catch (error) {
-
-                console.error("Failed to check banks:", error);
-
-            } finally {
-
-                setLoading(false);
-
-            }
-        }
-
-        checkBanks();
-
-    }, [user]);
-
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-
-    if (!bankStatus?.hasBanks) {
+    if (bankLoading) {
 
         return (
             <div>
-                <h1>
-                    Welcome, {user.displayName}
-                </h1>
-
-                <p>
-                    Connect a bank account to get started.
-                </p>
-
-                <button
-                    onClick={open}
-                    disabled={!ready || !linkToken}
-                >
-                    {linkToken
-                        ? "Connect Bank"
-                        : "Loading..."}
-                </button>
-
-                <button onClick={handleSignOut}>
-                    Sign Out
-                </button>
+                Checking your accounts...
             </div>
         );
+
     }
 
 
+    // User has no banks
+
+    if (!hasBanks) {
+
+        return (
+
+            <main className="no-banks">
+
+                <h1>Welcome, {user?.displayName || "Drew"}</h1>
+
+                <p>
+                    Connect your first bank account
+                    to start tracking your spending.
+                </p>
+
+                <button
+                    onClick={() => open()}
+                    disabled={!ready || !linkToken}
+                >
+                    {ready
+                        ? "Connect Bank"
+                        : "Loading..."
+                    }
+                </button>
+
+            </main>
+
+        );
+
+    }
+
+
+    // User has at least one bank
+
     return (
+
         <>
+
             <header>
+
                 <div className="pfp">
                     <div></div>
-                    {user.displayName}
+                    {user?.displayName || "Drew"}
                 </div>
 
                 <div className="settings">
                     Settings
                 </div>
+
             </header>
+
 
             <section className="summary">
 
@@ -101,19 +80,24 @@ function Home({
                 </div>
 
                 <div className="total_bal">
+
                     <span className="summary_title">
                         Total Balance
                     </span>
 
                     <br />
 
-                    {/* REAL BALANCE WILL GO HERE */}
+                    {/* Real balance will go here later */}
+
                     $0.00
+
                 </div>
 
             </section>
 
+
             <section className="bal_breakdown">
+
                 <div className="account_breakdown">
                     Account Breakdown
                 </div>
@@ -121,21 +105,43 @@ function Home({
                 <div className="manage_money">
                     Manage Money
                 </div>
+
             </section>
+
 
             <h2 className="month_pl_legend">
                 Month Recap
             </h2>
 
+
             <section className="month_pl">
-                {/* REAL DATA WILL GO HERE */}
+
+                <div className="pl_title">
+
+                    <span className="pl_bal">
+                        $0.00
+                    </span>
+
+                </div>
+
+                <div className="pl_chart">
+
+                    <div className="pl_chart_block"></div>
+                    <div className="pl_chart_block"></div>
+                    <div className="pl_chart_block"></div>
+                    <div className="pl_chart_block"></div>
+                    <div className="pl_chart_block"></div>
+                    <div className="pl_chart_block"></div>
+                    <div className="pl_chart_block"></div>
+
+                </div>
+
             </section>
 
-            <button onClick={handleSignOut}>
-                Sign Out
-            </button>
         </>
+
     );
+
 }
 
 export default Home;
