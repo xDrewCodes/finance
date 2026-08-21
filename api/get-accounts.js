@@ -32,7 +32,7 @@ export default async function handler(req, res) {
             .where('userId', '==', uid)
             .get();
 
-        const accounts = snap.docs
+        const accounts = snap.docs._fieldsProto
 
         return res.status(200).json({
             accounts
