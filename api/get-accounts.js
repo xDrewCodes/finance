@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
         const snapshot = await db
             .collection('accounts')
-            .where(uid)
+            .where('userId', '==', uid)
             .get();
 
         const accounts = snapshot.docs.map((doc) => {
