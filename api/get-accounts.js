@@ -27,21 +27,15 @@ export default async function handler(req, res) {
          * users/{uid}/accounts/{accountId}
          */
 
-        const snapshot = await db
+        const snap = await db
             .collection('accounts')
             .where('userId', '==', uid)
             .get();
 
-        const accounts = snapshot.docs.map((doc) => {
-            const data = doc.data();
-
-            return {
-                data
-            };
-        });
+        const accounts = snap
 
         return res.status(200).json({
-            data
+            accounts
         });
 
     } catch (error) {
