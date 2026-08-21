@@ -162,12 +162,10 @@ export default async function handler(req, res) {
         // --------------------------------
 
         for ( const acc of accounts ) {
-
-            let label = acc.institutionName + ' ' + acc.name
-
+            
             await db
                 .collection('accounts')
-                .doc(label)
+                .doc(acc.accountId)
                 .set(acc)
 
         }
