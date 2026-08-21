@@ -1,3 +1,6 @@
+
+import { Link } from "react-router-dom";
+
 function Home({
     user,
     hasBanks,
@@ -76,9 +79,19 @@ function Home({
                     {user?.displayName || "Drew"}
                 </div>
 
-                <div className="settings">
+                <Link
+                    to="/settings"
+                    className="settings"
+                >
                     Settings
-                </div>
+                </Link>
+
+                <Link
+                    to="/accounts"
+                    className="account_breakdown"
+                >
+                    Account Breakdown
+                </Link>
 
             </header>
 

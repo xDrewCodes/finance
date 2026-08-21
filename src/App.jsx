@@ -10,6 +10,8 @@ import Home from './components/home';
 import Nav from './components/Nav';
 import Sort from './components/Sort';
 import Login from './components/Login';
+import Settings from "./components/Settings";
+import Accounts from "./components/Accounts";
 
 
 function App() {
@@ -272,6 +274,23 @@ function App() {
         <Route
           path="/sort"
           element={<Sort />}
+        />
+
+        <Route
+          path="/settings"
+          element={<Settings />}
+        />
+
+        <Route
+          path="/accounts"
+          element={
+            <Accounts
+              user={user}
+              open={open}
+              ready={ready}
+              linkToken={linkToken}
+            />
+          }
         />
 
       </Routes>
