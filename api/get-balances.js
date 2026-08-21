@@ -159,7 +159,14 @@ export default async function handler(req, res) {
         // 5. Return data
         // --------------------------------
 
-        console.log(accounts)
+        for ( acc in accounts ) {
+
+            await db
+                .collection('Accounts')
+                .doc(uid)
+                .set(acc)
+
+        }
 
         return res.status(200).json({
 
