@@ -2,6 +2,8 @@ function Home({
     user,
     hasBanks,
     bankLoading,
+    balanceData,
+    balanceLoading,
     open,
     ready,
     linkToken

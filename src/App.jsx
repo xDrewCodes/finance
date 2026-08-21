@@ -80,21 +80,17 @@ function App() {
       const firebaseToken =
         await user.getIdToken();
 
-      const response =
-        await fetch(
-          "/api/get-balances",
-          {
-            headers: {
-              Authorization:
-                `Bearer ${firebaseToken}`
-            }
+      const response = await fetch(
+        "/api/get-balances",
+        {
+          headers: {
+            Authorization:
+              `Bearer ${firebaseToken}`
           }
-        );
+        }
+      );
 
-
-      const data =
-        await response.json();
-
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -103,12 +99,10 @@ function App() {
         );
       }
 
-
       console.log(
         "BALANCE RESPONSE:",
         data
       );
-
 
       setBalanceData(data);
 
@@ -124,7 +118,6 @@ function App() {
       setBalanceLoading(false);
 
     }
-
   }
 
 
