@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "firebase": "^12.18.0",
-    "firebase-admin": "^14.3.0",
-    "jose": "^4.15.9",
+    "firebase-admin": "^13.6.0",
     "plaid": "^42.1.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
