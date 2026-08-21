@@ -241,7 +241,7 @@ function Accounts({ user, open, ready, linkToken }) {
                                                     <div className="account-balance">
 
                                                         {formatBalance(
-                                                            account.currentBalance
+                                                            account.current
                                                         )}
 
                                                     </div>
