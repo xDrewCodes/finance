@@ -32,7 +32,11 @@ export default async function handler(req, res) {
             .where('userId', '==', uid)
             .get();
 
-        const accounts = snap.docs
+        const accounts = []
+
+        for ( const doc of snap.docs ) {
+            accounts.push(doc.data)
+        }
 
         return res.status(200).json({
             accounts

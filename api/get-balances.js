@@ -110,10 +110,10 @@ export default async function handler(req, res) {
                     mask:
                         account.mask,
 
-                    current:
+                    currentBalance:
                         account.balances.current,
 
-                    available:
+                    availableBalance:
                         account.balances.available,
 
                     isoCurrencyCode:
@@ -162,7 +162,7 @@ export default async function handler(req, res) {
         // --------------------------------
 
         for ( const acc of accounts ) {
-            
+
             await db
                 .collection('accounts')
                 .doc(acc.accountId)

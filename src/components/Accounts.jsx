@@ -32,8 +32,8 @@ function Accounts({ user, open, ready, linkToken }) {
                 );
             }
 
-            setAccounts(data.accounts._fieldsProto || []);
-            console.log(data.accounts._fieldsProto)
+            setAccounts(data.accounts || []);
+            console.log(data.accounts)
 
         } catch (error) {
 
@@ -241,7 +241,7 @@ function Accounts({ user, open, ready, linkToken }) {
                                                     <div className="account-balance">
 
                                                         {formatBalance(
-                                                            account.current
+                                                            account.currentBalance
                                                         )}
 
                                                     </div>
