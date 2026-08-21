@@ -1,63 +1,64 @@
+import { auth, db } from "./firebase-admin.js";
+
+
 export default async function handler(req, res) {
 
     try {
 
-        console.log("BANK STATUS FUNCTION RAN");
-
-        const { getAuth } = await import("firebase-admin/auth");
-        const { getFirestore } = await import("firebase-admin/firestore");
-        const { getApps, initializeApp, cert } = await import("firebase-admin/app");
-
-        if (getApps().length === 0) {
-
-            initializeApp({
-                credential: cert({
-                    projectId: process.env.FIREBASE_PROJECT_ID,
-                    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(
-                        /\\n/g,
-                        "\n"
-                    )
-                })
-            });
-
-        }
-
-        const auth = getAuth();
-        const db = getFirestore();
-
+        // Make sure the request has a Firebase token
         const authHeader = req.headers.authorization;
 
         if (!authHeader) {
             return res.status(401).json({
-                error: "No authorization header"
+                error: "Missing authorization header"
             });
         }
 
-        const token = authHeader.replace("Bearer ", "");
 
-        const decoded = await auth.verifyIdToken(token);
+        // Extract token from:
+        // Authorization: Bearer <token>
 
-        const uid = decoded.uid;
+        const idToken =
+            authHeader.replace("Bearer ", "");
 
-        console.log("Firebase UID:", uid);
+
+        // Verify Firebase user
+
+        const decodedToken =
+            await auth.verifyIdToken(idToken);
+
+
+        const uid = decodedToken.uid;
+
+
+        // Look for Plaid connections belonging
+        // to this Firebase user
 
         const snapshot = await db
             .collection("plaidItems")
             .where("userId", "==", uid)
             .get();
 
+
         return res.status(200).json({
-            hasBanks: !snapshot.empty
+
+            hasBanks: !snapshot.empty,
+
+            bankCount: snapshot.size
+
         });
 
     } catch (error) {
 
-        console.error("BANK STATUS ERROR:", error);
+        console.error(
+            "BANK STATUS ERROR:",
+            error
+        );
 
         return res.status(500).json({
             error: error.message
         });
 
     }
+
 }
