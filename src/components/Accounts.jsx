@@ -32,8 +32,8 @@ function Accounts({ user, open, ready, linkToken }) {
                 );
             }
 
-            setAccounts(data.accounts || []);
-            console.log(data.accounts)
+            setAccounts(data.accounts._fieldsProto || []);
+            console.log(data.accounts._fieldsProto)
 
         } catch (error) {
 
