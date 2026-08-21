@@ -117,7 +117,9 @@ export default async function handler(req, res) {
                         account.balances.available,
 
                     isoCurrencyCode:
-                        account.balances.iso_currency_code
+                        account.balances.iso_currency_code,
+                    userId:
+                        uid
 
                 });
 
@@ -161,10 +163,12 @@ export default async function handler(req, res) {
 
         for ( const acc of accounts ) {
 
+            let label = acc.institutionName + ' ' + acc.name
+
             await db
                 .collection('accounts')
-                .doc(acc.institutionName)
-                .set(acc, {userId: uid})
+                .doc(label)
+                .set(acc)
 
         }
 
