@@ -35,8 +35,9 @@ export default async function handler(req, res) {
         // to this Firebase user
 
         const snapshot = await db
-            .collection("plaidItems")
-            .where("userId", "==", uid)
+            .collection('users')
+            .doc(uid)
+            .collection('plaidItems')
             .get();
 
 
@@ -44,7 +45,7 @@ export default async function handler(req, res) {
 
             hasBanks: !snapshot.empty,
 
-            bankCount: snapshot.size
+            bankstuff: snapshot
 
         });
 
