@@ -9,6 +9,7 @@ import { auth } from "./firebase/firebaseConfig";
 import Home from './components/home';
 import Nav from './components/Nav';
 import Sort from './components/Sort';
+import Login from './components/Login';
 
 
 function App() {
@@ -239,6 +240,10 @@ function App() {
 
   if (authLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Login />;
   }
 
 

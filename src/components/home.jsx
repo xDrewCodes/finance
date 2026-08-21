@@ -23,6 +23,14 @@ function Home({
     }
 
 
+    const formattedBalance =
+        balanceData
+            ? new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD"
+            }).format(balanceData.totalBalance)
+            : "$0.00";
+
     // User has no banks
 
     if (!hasBanks) {
@@ -91,9 +99,7 @@ function Home({
 
                     {balanceLoading
                         ? "Loading..."
-                        : balanceData
-                            ? `$${balanceData.totalBalance.toFixed(2)}`
-                            : "$0.00"
+                        : formattedBalance
                     }
 
                 </div>
