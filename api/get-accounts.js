@@ -1,149 +1,80 @@
 import { adminAuth, db } from "./firebase-admin.js";
-import { plaidClient } from "./plaid.js";
-
 
 export default async function handler(req, res) {
-
     if (req.method !== "GET") {
-
         return res.status(405).json({
             error: "Method not allowed"
         });
-
     }
 
-
     try {
+        const authHeader = req.headers.authorization;
 
-        // -------------------------
-        // Authenticate Firebase user
-        // -------------------------
-
-        const authHeader =
-            req.headers.authorization;
-
-
-        if (!authHeader) {
-
+        if (!authHeader?.startsWith("Bearer ")) {
             return res.status(401).json({
-                error:
-                    "Missing authorization header"
+                error: "Missing authorization token"
             });
-
         }
 
+        const idToken = authHeader.split("Bearer ")[1];
 
-        const idToken =
-            authHeader.replace(
-                "Bearer ",
-                ""
-            );
+        const decodedToken = await adminAuth.verifyIdToken(idToken);
+        const uid = decodedToken.uid;
 
+        /*
+         * Accounts are stored under:
+         *
+         * users/{uid}/accounts/{accountId}
+         */
 
-        const decodedToken =
-            await adminAuth.verifyIdToken(
-                idToken
-            );
+        const snapshot = await db
+            .collection("users")
+            .doc(uid)
+            .collection("accounts")
+            .get();
 
+        const accounts = snapshot.docs.map((doc) => {
+            const data = doc.data();
 
-        const uid =
-            decodedToken.uid;
+            return {
+                accountId: doc.id,
 
+                plaidItemId: data.plaidItemId || null,
 
-        // -------------------------
-        // Get user's Plaid Items
-        // -------------------------
+                institutionName:
+                    data.institutionName || "Unknown Institution",
 
-        const snapshot =
-            await db
-                .collection("plaidItems")
-                .where(
-                    "userId",
-                    "==",
-                    uid
-                )
-                .get();
+                name: data.name || "Account",
 
+                officialName:
+                    data.officialName || null,
 
-        const accounts = [];
+                type: data.type || null,
 
+                subtype: data.subtype || null,
 
-        // -------------------------
-        // Get accounts from Plaid
-        // -------------------------
+                mask: data.mask || null,
 
-        for (
-            const doc of snapshot.docs
-        ) {
+                currentBalance:
+                    data.currentBalance ?? null,
 
-            const item =
-                doc.data();
+                availableBalance:
+                    data.availableBalance ?? null,
 
-
-            const response =
-                await plaidClient
-                    .accountsGet({
-                        access_token:
-                            item.accessToken
-                    });
-
-
-            for (
-                const account
-                of response.data.accounts
-            ) {
-
-                accounts.push({
-
-                    accountId:
-                        account.account_id,
-
-                    itemId:
-                        item.itemId,
-
-                    institutionName:
-                        item.institutionName,
-
-                    name:
-                        account.name,
-
-                    officialName:
-                        account.official_name,
-
-                    type:
-                        account.type,
-
-                    subtype:
-                        account.subtype,
-
-                    mask:
-                        account.mask
-
-                });
-
-            }
-
-        }
-
+                balanceUpdatedAt:
+                    data.balanceUpdatedAt?.toDate?.()?.toISOString() || null
+            };
+        });
 
         return res.status(200).json({
             accounts
         });
 
-
     } catch (error) {
-
-        console.error(
-            "GET ACCOUNTS ERROR:",
-            error
-        );
-
+        console.error("Get accounts error:", error);
 
         return res.status(500).json({
-            error:
-                error.message
+            error: "Failed to load accounts"
         });
-
     }
-
 }
