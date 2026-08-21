@@ -36,12 +36,12 @@ export default async function handler(req, res) {
             const data = doc.data();
 
             return {
-                accounts
+                data
             };
         });
 
         return res.status(200).json({
-            accounts
+            data
         });
 
     } catch (error) {
