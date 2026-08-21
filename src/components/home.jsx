@@ -87,9 +87,12 @@ function Home({
 
                     <br />
 
-                    {/* Real balance will go here later */}
-
-                    $0.00
+                    {balanceLoading
+                        ? "Loading..."
+                        : balanceData
+                            ? `$${balanceData.totalBalance.toFixed(2)}`
+                            : "$0.00"
+                    }
 
                 </div>
 

@@ -21,6 +21,9 @@ function App() {
 
   const [linkToken, setLinkToken] = useState(null);
 
+  const [balanceData, setBalanceData] = useState(null);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+
 
   // Firebase authentication
 
@@ -57,6 +60,72 @@ function App() {
       });
 
   }, [user]);
+
+  useEffect(() => {
+
+    if (user && hasBanks) {
+      getBalances();
+    }
+
+  }, [user, hasBanks]);
+
+  async function getBalances() {
+
+    if (!user || !hasBanks) return;
+
+    try {
+
+      setBalanceLoading(true);
+
+      const firebaseToken =
+        await user.getIdToken();
+
+      const response =
+        await fetch(
+          "/api/get-balances",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${firebaseToken}`
+            }
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+          "Failed to get balances"
+        );
+      }
+
+
+      console.log(
+        "BALANCE RESPONSE:",
+        data
+      );
+
+
+      setBalanceData(data);
+
+    } catch (error) {
+
+      console.error(
+        "Failed to get balances:",
+        error
+      );
+
+    } finally {
+
+      setBalanceLoading(false);
+
+    }
+
+  }
 
 
   // Check whether user has banks
@@ -193,6 +262,8 @@ function App() {
               user={user}
               hasBanks={hasBanks}
               bankLoading={bankLoading}
+              balanceData={balanceData}
+              balanceLoading={balanceLoading}
               open={open}
               ready={ready}
               linkToken={linkToken}
