@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         // Verify Firebase user
 
         const decodedToken =
-            await auth.verifyIdToken(idToken);
+            await adminAuth.verifyIdToken(idToken);
 
 
         const uid = decodedToken.uid;
