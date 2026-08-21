@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
 
+function Accounts({
+    user,
+    open,
+    ready,
+    linkToken
+}) {
 
-function Accounts({ user, open, ready, linkToken }) {
+    const [institutions, setInstitutions] = useState([]);
 
-    const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(true);
+
     const [error, setError] = useState("");
 
 
@@ -15,25 +21,48 @@ function Accounts({ user, open, ready, linkToken }) {
             setLoading(true);
             setError("");
 
-            const token = await user.getIdToken();
 
-            const response = await fetch("/api/get-accounts", {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            const token =
+                await user.getIdToken();
 
-            const data = await response.json();
+
+            const response =
+                await fetch("/api/get-accounts", {
+
+                    method: "GET",
+
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+
+                });
+
+
+            const data =
+                await response.json();
+
 
             if (!response.ok) {
+
                 throw new Error(
-                    data.error || "Failed to load accounts"
+                    data.error ||
+                    "Failed to load accounts"
                 );
+
             }
 
-            setAccounts(data.accounts || []);
-            console.log(data.accounts)
+
+            console.log(
+                "GET ACCOUNTS RESPONSE:",
+                data
+            );
+
+
+            setInstitutions(
+                data.institutions || []
+            );
+
 
         } catch (error) {
 
@@ -44,11 +73,13 @@ function Accounts({ user, open, ready, linkToken }) {
 
             setError(error.message);
 
+
         } finally {
 
             setLoading(false);
 
         }
+
     }
 
 
@@ -61,38 +92,26 @@ function Accounts({ user, open, ready, linkToken }) {
     }, [user]);
 
 
-    /*
-     * Group accounts by financial institution.
-     */
-    const groupedAccounts = accounts.reduce(
-        (groups, account) => {
-
-            const institution =
-                account.institutionName || "Unknown Institution";
-
-            if (!groups[institution]) {
-                groups[institution] = [];
-            }
-
-            groups[institution].push(account);
-
-            return groups;
-
-        },
-        {}
-    );
-
-
     function formatBalance(balance) {
 
-        if (balance === null || balance === undefined) {
+        if (
+            balance === null ||
+            balance === undefined
+        ) {
+
             return "Balance unavailable";
+
         }
 
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD"
-        }).format(balance);
+
+        return new Intl.NumberFormat(
+            "en-US",
+            {
+                style: "currency",
+                currency: "USD"
+            }
+        ).format(balance);
+
     }
 
 
@@ -102,11 +121,21 @@ function Accounts({ user, open, ready, linkToken }) {
             return "Balance not yet recorded";
         }
 
-        const date = new Date(timestamp);
 
-        if (Number.isNaN(date.getTime())) {
+        const date =
+            new Date(timestamp);
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
             return "Balance not yet recorded";
+
         }
+
 
         return `Updated ${date.toLocaleDateString(
             "en-US",
@@ -121,14 +150,21 @@ function Accounts({ user, open, ready, linkToken }) {
                 minute: "2-digit"
             }
         )}`;
+
     }
 
 
     if (loading) {
 
         return (
-            <main>
-                Loading accounts...
+            <main className="accounts-page">
+
+                <h1>Accounts</h1>
+
+                <p>
+                    Loading accounts...
+                </p>
+
             </main>
         );
 
@@ -138,7 +174,9 @@ function Accounts({ user, open, ready, linkToken }) {
     if (error) {
 
         return (
-            <main>
+            <main className="accounts-page">
+
+                <h1>Accounts</h1>
 
                 <p>
                     Failed to load accounts.
@@ -153,6 +191,7 @@ function Accounts({ user, open, ready, linkToken }) {
 
     }
 
+
     return (
 
         <main className="accounts-page">
@@ -160,7 +199,7 @@ function Accounts({ user, open, ready, linkToken }) {
             <h1>Accounts</h1>
 
 
-            {accounts.length === 0 ? (
+            {institutions.length === 0 ? (
 
                 <p>
                     No accounts connected.
@@ -170,99 +209,175 @@ function Accounts({ user, open, ready, linkToken }) {
 
                 <div className="institutions">
 
-                    {Object.entries(groupedAccounts).map(
-                        ([institutionName, institutionAccounts]) => (
+                    {institutions.map(
+                        (institution) => (
 
                             <section
                                 className="institution-section"
-                                key={institutionName}
+                                key={
+                                    institution.plaidItemId
+                                }
                             >
+
+                                {/* Institution header */}
 
                                 <div className="institution-header">
 
-                                    <h2>
-                                        {institutionName}
-                                    </h2>
+                                    {institution.institutionLogo ? (
+
+                                        <img
+                                            className="institution-logo"
+                                            src={
+                                                `data:image/png;base64,${institution.institutionLogo}`
+                                            }
+                                            alt=""
+                                        />
+
+                                    ) : (
+
+                                        <div
+                                            className="institution-logo-fallback"
+                                            style={{
+                                                backgroundColor:
+                                                    institution.institutionColor ||
+                                                    "#e5e5e5"
+                                            }}
+                                        >
+                                            $
+                                        </div>
+
+                                    )}
+
+
+                                    <div>
+
+                                        <h2>
+                                            {
+                                                institution.institutionName
+                                            }
+                                        </h2>
+
+                                        {institution.institutionUrl && (
+
+                                            <a
+                                                href={
+                                                    institution.institutionUrl
+                                                }
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="institution-link"
+                                            >
+                                                Visit website
+                                            </a>
+
+                                        )}
+
+                                    </div>
 
                                 </div>
 
 
-                                <div className="account-list">
+                                {/* Accounts */}
 
-                                    {institutionAccounts.map(
-                                        (account) => (
+                                {institution.accounts.length === 0 ? (
 
-                                            <div
-                                                className="account-card"
-                                                key={account.accountId}
-                                            >
+                                    <p>
+                                        No accounts found for this bank.
+                                    </p>
 
-                                                <div className="account-card-top">
+                                ) : (
 
-                                                    <div>
+                                    <div className="account-list">
 
-                                                        <strong>
-                                                            {account.name}
-                                                        </strong>
+                                        {institution.accounts.map(
+                                            (account) => (
 
-                                                        {account.officialName &&
-                                                            account.officialName !== account.name && (
-                                                                <div>
-                                                                    {account.officialName}
-                                                                </div>
-                                                            )
-                                                        }
+                                                <div
+                                                    className="account-card"
+                                                    key={
+                                                        account.accountId
+                                                    }
+                                                >
+
+                                                    <div className="account-card-top">
+
+                                                        <div>
+
+                                                            <strong>
+                                                                {
+                                                                    account.name
+                                                                }
+                                                            </strong>
+
+
+                                                            {account.officialName &&
+                                                                account.officialName !==
+                                                                account.name && (
+
+                                                                    <div>
+                                                                        {
+                                                                            account.officialName
+                                                                        }
+                                                                    </div>
+
+                                                                )}
+
+                                                        </div>
+
+
+                                                        {account.mask && (
+
+                                                            <span>
+                                                                •••• {
+                                                                    account.mask
+                                                                }
+                                                            </span>
+
+                                                        )}
 
                                                     </div>
 
 
-                                                    {account.mask && (
+                                                    <div className="account-card-middle">
 
-                                                        <span>
-                                                            •••• {account.mask}
-                                                        </span>
+                                                        <div className="account-type">
 
-                                                    )}
+                                                            {
+                                                                account.subtype ||
+                                                                account.type ||
+                                                                "Account"
+                                                            }
 
-                                                </div>
+                                                        </div>
 
 
-                                                <div className="account-card-middle">
+                                                        <div className="account-balance">
 
-                                                    <div className="account-type">
+                                                            {formatBalance(
+                                                                account.currentBalance
+                                                            )}
 
-                                                        {account.subtype ||
-                                                            account.type ||
-                                                            "Account"
-                                                        }
+                                                        </div>
 
                                                     </div>
 
-                                                    <div className="account-balance">
 
-                                                        {formatBalance(
-                                                            account.currentBalance
+                                                    <div className="account-card-bottom">
+
+                                                        {formatUpdatedTime(
+                                                            account.balanceUpdatedAt
                                                         )}
 
                                                     </div>
 
                                                 </div>
 
+                                            )
+                                        )}
 
-                                                <div className="account-card-bottom">
+                                    </div>
 
-                                                    {formatUpdatedTime(
-                                                        account.balanceUpdatedAt
-                                                    )}
-
-                                                </div>
-
-                                            </div>
-
-                                        )
-                                    )}
-
-                                </div>
+                                )}
 
                             </section>
 
@@ -276,7 +391,10 @@ function Accounts({ user, open, ready, linkToken }) {
 
             <button
                 onClick={() => open()}
-                disabled={!ready || !linkToken}
+                disabled={
+                    !ready ||
+                    !linkToken
+                }
             >
 
                 {!ready || !linkToken
@@ -290,6 +408,7 @@ function Accounts({ user, open, ready, linkToken }) {
         </main>
 
     );
+
 }
 
 

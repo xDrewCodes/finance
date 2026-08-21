@@ -1,6 +1,7 @@
 import { adminAuth, db } from "./firebase-admin.js";
 
 export default async function handler(req, res) {
+
     if (req.method !== "GET") {
         return res.status(405).json({
             error: "Method not allowed"
@@ -8,6 +9,11 @@ export default async function handler(req, res) {
     }
 
     try {
+
+        // --------------------------------
+        // Authenticate Firebase user
+        // --------------------------------
+
         const authHeader = req.headers.authorization;
 
         if (!authHeader?.startsWith("Bearer ")) {
@@ -18,62 +24,146 @@ export default async function handler(req, res) {
 
         const idToken = authHeader.split("Bearer ")[1];
 
-        const decodedToken = await adminAuth.verifyIdToken(idToken);
+        const decodedToken =
+            await adminAuth.verifyIdToken(idToken);
+
         const uid = decodedToken.uid;
 
-        /*
-         * Accounts are stored under:
-         *
-         * users/{uid}/accounts/{accountId}
-         */
 
-        const snapshot = await db
-            .collection('accounts')
-            .where('userId', '==', uid)
+        // --------------------------------
+        // Get user's Plaid Items
+        // --------------------------------
+
+        const itemsSnapshot = await db
+            .collection("users")
+            .doc(uid)
+            .collection("plaidItems")
             .get();
 
-        const accounts = snapshot.docs.map((doc) => {
-            const data = doc.data();
 
-            return {
-                accountId: doc.id,
+        const institutions = [];
 
-                itemId: data.itemId || null,
+
+        // --------------------------------
+        // Get accounts for each Item
+        // --------------------------------
+
+        for (const itemDoc of itemsSnapshot.docs) {
+
+            const itemData = itemDoc.data();
+
+            const itemId = itemDoc.id;
+
+
+            const accountsSnapshot = await itemDoc.ref
+                .collection("accounts")
+                .get();
+
+
+            const accounts = accountsSnapshot.docs.map(
+                (accountDoc) => {
+
+                    const data = accountDoc.data();
+
+                    return {
+
+                        accountId:
+                            accountDoc.id,
+
+                        name:
+                            data.name ||
+                            "Account",
+
+                        officialName:
+                            data.officialName ||
+                            null,
+
+                        type:
+                            data.type ||
+                            null,
+
+                        subtype:
+                            data.subtype ||
+                            null,
+
+                        mask:
+                            data.mask ||
+                            null,
+
+                        currentBalance:
+                            data.currentBalance ??
+                            null,
+
+                        availableBalance:
+                            data.availableBalance ??
+                            null,
+
+                        balanceUpdatedAt:
+                            data.balanceUpdatedAt
+                                ?.toDate?.()
+                                ?.toISOString() ||
+                            null
+
+                    };
+
+                }
+            );
+
+
+            // --------------------------------
+            // Build institution
+            // --------------------------------
+
+            institutions.push({
+
+                plaidItemId: itemId,
+
+                institutionId:
+                    itemData.institutionId ||
+                    null,
 
                 institutionName:
-                    data.institutionName || "Unknown Institution",
+                    itemData.institutionName ||
+                    "Unknown Institution",
 
-                name: data.name || "Account",
+                institutionLogo:
+                    itemData.institutionLogo ||
+                    null,
 
-                officialName:
-                    data.officialName || null,
+                institutionColor:
+                    itemData.institutionColor ||
+                    null,
 
-                type: data.type || null,
+                institutionUrl:
+                    itemData.institutionUrl ||
+                    null,
 
-                subtype: data.subtype || null,
+                accounts
 
-                mask: data.mask || null,
+            });
 
-                currentBalance:
-                    data.currentBalance ?? null,
+        }
 
-                availableBalance:
-                    data.availableBalance ?? null,
 
-                balanceUpdatedAt:
-                    data.balanceUpdatedAt?.toDate?.()?.toISOString() || null
-            };
-        });
+        // --------------------------------
+        // Return data
+        // --------------------------------
 
         return res.status(200).json({
-            accounts
+            institutions
         });
 
     } catch (error) {
-        console.error("Get accounts error:", error);
+
+        console.error(
+            "Get accounts error:",
+            error
+        );
 
         return res.status(500).json({
             error: "Failed to load accounts"
         });
+
     }
+
 }
