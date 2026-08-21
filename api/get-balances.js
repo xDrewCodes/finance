@@ -162,9 +162,9 @@ export default async function handler(req, res) {
         for ( const acc of accounts ) {
 
             await db
-                .collection('Accounts')
-                .doc(uid)
-                .set(acc)
+                .collection('accounts')
+                .doc(acc.institutionName)
+                .set(acc, {userId: uid})
 
         }
 
