@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 import {
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword
+    GoogleAuthProvider,
+    signInWithPopup
 } from "firebase/auth";
 
 import { auth } from "../firebase/firebaseConfig";
@@ -10,47 +10,42 @@ import { auth } from "../firebase/firebaseConfig";
 
 function Login() {
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-
-    const [isCreating, setIsCreating] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const [loading, setLoading] = useState(false);
 
+    async function handleGoogleSignIn() {
 
-    async function handleSubmit(e) {
-
-        e.preventDefault();
-
-        setError("");
         setLoading(true);
+        setError("");
 
         try {
 
-            if (isCreating) {
+            const provider =
+                new GoogleAuthProvider();
 
-                await createUserWithEmailAndPassword(
-                    auth,
-                    email,
-                    password
-                );
+            await signInWithPopup(
+                auth,
+                provider
+            );
 
-            } else {
-
-                await signInWithEmailAndPassword(
-                    auth,
-                    email,
-                    password
-                );
-
-            }
+            // We don't need to manually
+            // set the user here.
+            //
+            // onAuthStateChanged() in App.jsx
+            // will detect the successful login.
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                "Google sign-in failed:",
+                error
+            );
 
-            setError(error.message);
+            setError(
+                error.message ||
+                "Failed to sign in with Google."
+            );
 
         } finally {
 
@@ -67,73 +62,28 @@ function Login() {
 
             <h1>Finance</h1>
 
-            <h2>
-                {isCreating
-                    ? "Create Account"
-                    : "Sign In"
-                }
-            </h2>
+            <p>
+                Sign in to view your finances.
+            </p>
 
 
-            <form onSubmit={handleSubmit}>
+            {error && (
 
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) =>
-                        setEmail(e.target.value)
-                    }
-                    required
-                />
+                <p className="login-error">
+                    {error}
+                </p>
 
-
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) =>
-                        setPassword(e.target.value)
-                    }
-                    required
-                />
-
-
-                {error && (
-                    <p className="login-error">
-                        {error}
-                    </p>
-                )}
-
-
-                <button
-                    type="submit"
-                    disabled={loading}
-                >
-
-                    {loading
-                        ? "Loading..."
-                        : isCreating
-                            ? "Create Account"
-                            : "Sign In"
-                    }
-
-                </button>
-
-            </form>
+            )}
 
 
             <button
-                type="button"
-                onClick={() => {
-                    setIsCreating(!isCreating);
-                    setError("");
-                }}
+                onClick={handleGoogleSignIn}
+                disabled={loading}
             >
 
-                {isCreating
-                    ? "Already have an account? Sign In"
-                    : "Need an account? Create One"
+                {loading
+                    ? "Signing in..."
+                    : "Sign in with Google"
                 }
 
             </button>
@@ -143,5 +93,6 @@ function Login() {
     );
 
 }
+
 
 export default Login;
