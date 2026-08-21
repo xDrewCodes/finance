@@ -159,7 +159,7 @@ export default async function handler(req, res) {
         // 5. Return data
         // --------------------------------
 
-        for ( acc in accounts ) {
+        for ( const acc of accounts ) {
 
             await db
                 .collection('Accounts')
