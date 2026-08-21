@@ -159,6 +159,8 @@ export default async function handler(req, res) {
         // 5. Return data
         // --------------------------------
 
+        console.log(accounts)
+
         return res.status(200).json({
 
             hasBanks: true,
