@@ -27,16 +27,43 @@ export default async function handler(req, res) {
          * users/{uid}/accounts/{accountId}
          */
 
-        const snap = await db
+        const snapshot = await db
             .collection('accounts')
-            .where('userId', '==', uid)
+            .where(uid)
             .get();
 
-        const accounts = []
+        const accounts = snapshot.docs.map((doc) => {
+            const data = doc.data();
 
-        for ( const doc of snap.docs ) {
-            accounts.push(doc.data)
-        }
+            return {
+                accountId: doc.id,
+
+                itemId: data.itemId || null,
+
+                institutionName:
+                    data.institutionName || "Unknown Institution",
+
+                name: data.name || "Account",
+
+                officialName:
+                    data.officialName || null,
+
+                type: data.type || null,
+
+                subtype: data.subtype || null,
+
+                mask: data.mask || null,
+
+                currentBalance:
+                    data.currentBalance ?? null,
+
+                availableBalance:
+                    data.availableBalance ?? null,
+
+                balanceUpdatedAt:
+                    data.balanceUpdatedAt?.toDate?.()?.toISOString() || null
+            };
+        });
 
         return res.status(200).json({
             accounts
