@@ -45,7 +45,7 @@ export default async function handler(req, res) {
 
             hasBanks: !snapshot.empty,
 
-            bankstuff: snapshot
+            bankstuff: snapshot.docs
 
         });
 
