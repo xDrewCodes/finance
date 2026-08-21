@@ -13,201 +13,205 @@ import Sort from './components/Sort';
 
 function App() {
 
-    const [user, setUser] = useState(null);
-    const [authLoading, setAuthLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
-    const [hasBanks, setHasBanks] = useState(false);
-    const [bankLoading, setBankLoading] = useState(false);
+  const [hasBanks, setHasBanks] = useState(false);
+  const [bankLoading, setBankLoading] = useState(false);
 
-    const [linkToken, setLinkToken] = useState(null);
-
-
-    // Firebase authentication
-
-    useEffect(() => {
-
-        const unsubscribe = onAuthStateChanged(
-            auth,
-            (currentUser) => {
-
-                setUser(currentUser);
-                setAuthLoading(false);
-
-            }
-        );
-
-        return unsubscribe;
-
-    }, []);
+  const [linkToken, setLinkToken] = useState(null);
 
 
-    // Get Plaid Link token
+  // Firebase authentication
 
-    useEffect(() => {
+  useEffect(() => {
 
-        if (!user) {
-            setLinkToken(null);
-            return;
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (currentUser) => {
+
+        setUser(currentUser);
+        setAuthLoading(false);
+
+      }
+    );
+
+    return unsubscribe;
+
+  }, []);
+
+
+  // Get Plaid Link token
+
+  useEffect(() => {
+
+    if (!user) {
+      setLinkToken(null);
+      return;
+    }
+
+    fetch("/api/create-link-token")
+      .then(res => res.json())
+      .then(data => {
+        setLinkToken(data.link_token);
+      });
+
+  }, [user]);
+
+
+  // Check whether user has banks
+
+  async function checkBankStatus() {
+
+    if (!user) return;
+
+    try {
+
+      setBankLoading(true);
+
+      const firebaseToken =
+        await user.getIdToken();
+
+      const response = await fetch(
+        "/api/bank-status",
+        {
+          headers: {
+            Authorization:
+              `Bearer ${firebaseToken}`
+          }
         }
+      );
 
-        fetch("/api/create-link-token")
-            .then(res => res.json())
-            .then(data => {
-                setLinkToken(data.link_token);
-            });
+      const data =
+        await response.json();
 
-    }, [user]);
+      console.log("BANK STATUS:", data);
+
+      setHasBanks(data.hasBanks);
+
+    } catch (error) {
+
+      console.error(
+        "Failed to check banks:",
+        error
+      );
+
+    } finally {
+
+      setBankLoading(false);
+
+    }
+
+  }
 
 
-    // Check whether user has banks
+  // Check banks whenever user signs in
 
-    async function checkBankStatus() {
+  useEffect(() => {
 
-        if (!user) return;
+    if (user) {
+      checkBankStatus();
+    } else {
+      setHasBanks(false);
+    }
+
+  }, [user]);
+
+
+  // Plaid Link
+
+  const { open, ready } =
+    PlaidLink.usePlaidLink({
+
+      token: linkToken,
+
+      onSuccess: async (public_token, metadata) => {
 
         try {
 
-            setBankLoading(true);
+          const firebaseToken =
+            await user.getIdToken();
 
-            const firebaseToken =
-                await user.getIdToken();
+          const response = await fetch(
+            "/api/exchange-token",
+            {
+              method: "POST",
 
-            const response = await fetch(
-                "/api/bank-status",
-                {
-                    headers: {
-                        Authorization:
-                            `Bearer ${firebaseToken}`
-                    }
-                }
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${firebaseToken}`
+              },
+
+              body: JSON.stringify({
+                public_token,
+                metadata
+              })
+            }
+          );
+
+          const data = await response.json();
+
+          console.log("PLAID EXCHANGE:", data);
+
+          if (!response.ok) {
+            throw new Error(
+              data.error || "Failed to connect bank"
             );
+          }
 
-            const data =
-                await response.json();
-
-            console.log("BANK STATUS:", data);
-
-            setHasBanks(data.hasBanks);
+          // Refresh bank status
+          await checkBankStatus();
 
         } catch (error) {
 
-            console.error(
-                "Failed to check banks:",
-                error
-            );
-
-        } finally {
-
-            setBankLoading(false);
+          console.error(
+            "Bank connection failed:",
+            error
+          );
 
         }
+      }
 
-    }
-
-
-    // Check banks whenever user signs in
-
-    useEffect(() => {
-
-        if (user) {
-            checkBankStatus();
-        } else {
-            setHasBanks(false);
-        }
-
-    }, [user]);
+    });
 
 
-    // Plaid Link
-
-    const { open, ready } =
-        PlaidLink.usePlaidLink({
-
-            token: linkToken,
-
-            onSuccess: async (
-                public_token,
-                metadata
-            ) => {
-
-                const firebaseToken =
-                    await user.getIdToken();
-
-                const response =
-                    await fetch(
-                        "/api/exchange-token",
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json",
-
-                                Authorization:
-                                    `Bearer ${firebaseToken}`
-                            },
-
-                            body: JSON.stringify({
-                                public_token
-                            })
-                        }
-                    );
-
-                const data =
-                    await response.json();
-
-                console.log(
-                    "PLAID EXCHANGE:",
-                    data
-                );
-
-                // Re-check bank status
-                // after connecting bank
-
-                await checkBankStatus();
-
-            }
-
-        });
+  if (authLoading) {
+    return <div>Loading...</div>;
+  }
 
 
-    if (authLoading) {
-        return <div>Loading...</div>;
-    }
+  return (
 
+    <BrowserRouter>
 
-    return (
+      <Routes>
 
-        <BrowserRouter>
+        <Route
+          path="/"
+          element={
+            <Home
+              user={user}
+              hasBanks={hasBanks}
+              bankLoading={bankLoading}
+              open={open}
+              ready={ready}
+              linkToken={linkToken}
+            />
+          }
+        />
 
-            <Routes>
+        <Route
+          path="/sort"
+          element={<Sort />}
+        />
 
-                <Route
-                    path="/"
-                    element={
-                        <Home
-                            user={user}
-                            hasBanks={hasBanks}
-                            bankLoading={bankLoading}
-                            open={open}
-                            ready={ready}
-                            linkToken={linkToken}
-                        />
-                    }
-                />
+      </Routes>
 
-                <Route
-                    path="/sort"
-                    element={<Sort />}
-                />
+      {user && <Nav />}
 
-            </Routes>
+    </BrowserRouter>
 
-            {user && <Nav />}
-
-        </BrowserRouter>
-
-    );
+  );
 
 }
 

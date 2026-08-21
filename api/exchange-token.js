@@ -1,25 +1,47 @@
 import { adminAuth, db } from "./firebase-admin.js";
 import { plaidClient } from "./plaid.js";
 
+
 export default async function handler(req, res) {
+
+    if (req.method !== "POST") {
+        return res.status(405).json({
+            error: "Method not allowed"
+        });
+    }
 
     try {
 
-        const authHeader = req.headers.authorization;
+        // --------------------------------
+        // 1. Get Firebase ID token
+        // --------------------------------
 
-        if (!authHeader?.startsWith("Bearer ")) {
+        const authHeader =
+            req.headers.authorization;
+
+        if (!authHeader) {
             return res.status(401).json({
-                error: "Missing Firebase authentication"
+                error: "Missing authorization header"
             });
         }
 
-        const firebaseToken = authHeader.split("Bearer ")[1];
+        const idToken =
+            authHeader.replace("Bearer ", "");
 
-        const decodedToken = await adminAuth.verifyIdToken(firebaseToken);
+        const decodedToken =
+            await adminAuth.verifyIdToken(idToken);
 
         const uid = decodedToken.uid;
 
-        const { public_token } = req.body;
+
+        // --------------------------------
+        // 2. Get Plaid public token
+        // --------------------------------
+
+        const {
+            public_token,
+            metadata
+        } = req.body;
 
         if (!public_token) {
             return res.status(400).json({
@@ -27,36 +49,86 @@ export default async function handler(req, res) {
             });
         }
 
-        // Exchange Plaid public token for access token
-        const response = await plaidClient.itemPublicTokenExchange({
-            public_token
-        });
 
-        const accessToken = response.data.access_token;
-        const itemId = response.data.item_id;
+        // --------------------------------
+        // 3. Exchange public token
+        // --------------------------------
 
-        // Store the Plaid connection
-        await db.collection("plaidItems").doc(itemId).set({
-            userId: uid,
-            accessToken: accessToken,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        });
+        const plaidResponse =
+            await plaidClient.itemPublicTokenExchange({
+                public_token
+            });
+
+        const {
+            access_token,
+            item_id
+        } = plaidResponse.data;
+
+
+        // --------------------------------
+        // 4. Get institution information
+        // --------------------------------
+
+        const institution =
+            metadata?.institution || null;
+
+
+        // --------------------------------
+        // 5. Save Plaid Item
+        // --------------------------------
+
+        await db
+            .collection("plaidItems")
+            .doc(item_id)
+            .set({
+
+                userId: uid,
+
+                itemId: item_id,
+
+                accessToken: access_token,
+
+                institutionId:
+                    institution?.institution_id || null,
+
+                institutionName:
+                    institution?.name || null,
+
+                createdAt:
+                    new Date().toISOString(),
+
+                updatedAt:
+                    new Date().toISOString()
+
+            });
+
+
+        // --------------------------------
+        // 6. Return safe response
+        // --------------------------------
 
         return res.status(200).json({
+
             success: true,
-            itemId
+
+            itemId: item_id,
+
+            institutionName:
+                institution?.name || null
+
         });
 
     } catch (error) {
 
         console.error(
-            "Exchange token error:",
-            error.response?.data || error
+            "PLAID EXCHANGE ERROR:",
+            error
         );
 
         return res.status(500).json({
-            error: "Failed to exchange token"
+            error: error.message
         });
+
     }
+
 }
