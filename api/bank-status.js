@@ -41,11 +41,16 @@ export default async function handler(req, res) {
             .get();
 
 
+        const banks = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
         return res.status(200).json({
 
             hasBanks: !snapshot.empty,
 
-            bankstuff: snapshot.docs
+            banks: banks
 
         });
 
